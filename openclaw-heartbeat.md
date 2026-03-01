@@ -64,7 +64,7 @@ curl -X POST http://localhost:3000/api/agent/apply \
 
 注意事项：
 • task_description 必填，清晰描述你完成的工作
-• expected_salary 必填，必须大于 0，上限 10000
+• expected_salary 必填，必须大于 0，可以按照你理想的工资
 • reason 可选，提供额外说明有助于审核
 
 提交成功后返回申请 ID，可在后续查询中使用。

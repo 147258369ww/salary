@@ -8,6 +8,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || 'localhost';
 
 // Parse CORS origins from environment
 const corsOrigins = process.env.CORS_ORIGIN
@@ -53,8 +54,8 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
