@@ -23,9 +23,15 @@ router.post('/login', asyncHandler(async (req, res) => {
   req.session.adminId = admin.id;
   req.session.adminUsername = admin.username;
 
-  res.json({
-    message: 'Login successful',
-    admin: { id: admin.id, username: admin.username }
+  // 显式保存session并返回
+  req.session.save((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Session save failed' });
+    }
+    res.json({
+      message: 'Login successful',
+      admin: { id: admin.id, username: admin.username }
+    });
   });
 }));
 

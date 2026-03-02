@@ -27,14 +27,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
-    secure: true, // 生产环境必须true，sameSite:'none'要求secure
+    secure: isProduction, // 生产环境true，开发环境false
     httpOnly: true,
-    sameSite: 'none', // 允许跨站请求携带Cookie
+    sameSite: isProduction ? 'none' : 'lax', // 生产环境none允许跨站，开发环境lax
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
