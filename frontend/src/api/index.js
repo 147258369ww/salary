@@ -45,10 +45,22 @@ export const getTransactions = (params) =>
 export const getStats = () =>
   api.get('/admin/stats')
 
-export const createAgent = (name, initialBalance) =>
-  api.post('/admin/agents', { name, initialBalance })
+export const createAgent = (name, initialBalance, apiKey, initialPower) =>
+  api.post('/admin/agents', { name, initialBalance, apiKey, initialPower })
 
 export const deleteAgent = (id) =>
   api.delete(`/admin/agents/${id}`)
+
+// 获取Agent电量状态
+export const getAgentPower = (id) =>
+  api.get(`/admin/agents/${id}/power`)
+
+// 扣除Agent余额
+export const deductAgentBalance = (id, amount, reason) =>
+  api.post(`/admin/agents/${id}/deduct`, { amount, reason })
+
+// 审批申请（支持自定义金额）
+export const approveApplicationWithAmount = (id, adminComment, customAmount) =>
+  api.post(`/admin/applications/${id}/approve`, { adminComment, customAmount })
 
 export default api

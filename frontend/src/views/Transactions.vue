@@ -21,6 +21,10 @@
               <el-icon><Document /></el-icon>
               <span>申请审核</span>
             </el-menu-item>
+            <el-menu-item index="/agents">
+              <el-icon><User /></el-icon>
+              <span>Agent 管理</span>
+            </el-menu-item>
             <el-menu-item index="/transactions">
               <el-icon><List /></el-icon>
               <span>交易流水</span>
@@ -36,16 +40,18 @@
                 <el-select v-model="typeFilter" placeholder="筛选类型" clearable @change="fetchTransactions" style="width: 150px;">
                   <el-option label="收入" value="credit" />
                   <el-option label="支出" value="debit" />
+                  <el-option label="电量购买" value="power_purchase" />
+                  <el-option label="管理员扣款" value="admin_deduct" />
                 </el-select>
               </div>
             </template>
 
             <el-table :data="transactions" v-loading="loading" empty-text="暂无交易记录">
               <el-table-column prop="agent_name" label="Agent" width="120" />
-              <el-table-column prop="type" label="类型" width="100">
+              <el-table-column prop="type" label="类型" width="120">
                 <template #default="{ row }">
-                  <el-tag :type="row.type === 'credit' ? 'success' : 'danger'">
-                    {{ row.type === 'credit' ? '收入' : '支出' }}
+                  <el-tag :type="getTypeTagType(row.type)">
+                    {{ getTypeText(row.type) }}
                   </el-tag>
                 </template>
               </el-table-column>
@@ -74,7 +80,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { DataLine, Document, List } from '@element-plus/icons-vue'
+import { DataLine, Document, List, User } from '@element-plus/icons-vue'
 import { getTransactions, logout } from '../api'
 
 const router = useRouter()
@@ -85,6 +91,26 @@ const typeFilter = ref('')
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleString('zh-CN')
+}
+
+const getTypeTagType = (type) => {
+  const types = {
+    credit: 'success',
+    debit: 'danger',
+    power_purchase: 'warning',
+    admin_deduct: 'danger'
+  }
+  return types[type] || 'info'
+}
+
+const getTypeText = (type) => {
+  const texts = {
+    credit: '收入',
+    debit: '支出',
+    power_purchase: '电量购买',
+    admin_deduct: '管理员扣款'
+  }
+  return texts[type] || type
 }
 
 const fetchTransactions = async () => {

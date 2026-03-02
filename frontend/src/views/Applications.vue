@@ -21,6 +21,10 @@
               <el-icon><Document /></el-icon>
               <span>申请审核</span>
             </el-menu-item>
+            <el-menu-item index="/agents">
+              <el-icon><User /></el-icon>
+              <span>Agent 管理</span>
+            </el-menu-item>
             <el-menu-item index="/transactions">
               <el-icon><List /></el-icon>
               <span>交易流水</span>
@@ -91,6 +95,25 @@
         <el-form-item label="期望工资">
           <p>¥{{ Number(currentApplication?.expected_salary || 0).toFixed(2) }}</p>
         </el-form-item>
+        <el-form-item label="自定义金额">
+          <el-input-number
+            v-model="approveForm.customAmount"
+            :min="0.01"
+            :max="Number(currentApplication?.expected_salary || 0) * 2"
+            :precision="2"
+            :step="10"
+            placeholder="不填则按原金额审批"
+            style="width: 200px;"
+          />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            (不超过申请金额的2倍)
+          </span>
+        </el-form-item>
+        <el-form-item label="实际审批">
+          <p style="font-weight: bold; color: #409EFF; font-size: 16px;">
+            ¥{{ Number(approveForm.customAmount || currentApplication?.expected_salary || 0).toFixed(2) }}
+          </p>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input
             v-model="approveForm.comment"
@@ -140,8 +163,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { DataLine, Document, List } from '@element-plus/icons-vue'
-import { getApplications, approveApplication, rejectApplication, logout } from '../api'
+import { DataLine, Document, List, User } from '@element-plus/icons-vue'
+import { getApplications, approveApplication, approveApplicationWithAmount, rejectApplication, logout } from '../api'
 
 const router = useRouter()
 const loading = ref(false)
@@ -152,7 +175,7 @@ const statusFilter = ref('')
 const approveDialogVisible = ref(false)
 const rejectDialogVisible = ref(false)
 const currentApplication = ref(null)
-const approveForm = reactive({ comment: '' })
+const approveForm = reactive({ comment: '', customAmount: null })
 const rejectForm = reactive({ comment: '' })
 
 const statusType = (status) => {
@@ -187,6 +210,7 @@ const fetchApplications = async () => {
 const openApproveDialog = (app) => {
   currentApplication.value = app
   approveForm.comment = ''
+  approveForm.customAmount = null
   approveDialogVisible.value = true
 }
 
@@ -199,7 +223,11 @@ const openRejectDialog = (app) => {
 const handleApprove = async () => {
   submitting.value = true
   try {
-    await approveApplication(currentApplication.value.id, approveForm.comment)
+    if (approveForm.customAmount) {
+      await approveApplicationWithAmount(currentApplication.value.id, approveForm.comment, approveForm.customAmount)
+    } else {
+      await approveApplication(currentApplication.value.id, approveForm.comment)
+    }
     ElMessage.success('申请已批准')
     approveDialogVisible.value = false
     fetchApplications()

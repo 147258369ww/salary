@@ -25,6 +25,12 @@ const routes = [
     name: 'Transactions',
     component: () => import('../views/Transactions.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/agents',
+    name: 'Agents',
+    component: () => import('../views/Agents.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

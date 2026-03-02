@@ -68,7 +68,7 @@ class Application {
     return rows;
   }
 
-  static async approve(id, adminComment = null) {
+  static async approve(id, adminComment = null, approvedAmount = null) {
     const [result] = await db.execute(`
       UPDATE salary_applications
       SET status = 'approved',
@@ -77,6 +77,39 @@ class Application {
       WHERE id = ? AND status = 'pending'
     `, [adminComment, id]);
     return result.affectedRows > 0;
+  }
+
+  /**
+   * 创建自主任务类型的工资申请
+   */
+  static async createFromAutoTask(agentId, taskDescription, expectedSalary, reason = null, autoTaskId = null) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // 创建申请
+      const [appResult] = await connection.execute(
+        'INSERT INTO salary_applications (agent_id, task_description, expected_salary, reason) VALUES (?, ?, ?, ?)',
+        [agentId, taskDescription, expectedSalary, reason]
+      );
+      const applicationId = appResult.insertId;
+
+      // 如果有自主任务ID，更新关联
+      if (autoTaskId) {
+        await connection.execute(
+          'UPDATE auto_tasks SET status = \'submitted\', application_id = ?, submitted_at = NOW() WHERE id = ?',
+          [applicationId, autoTaskId]
+        );
+      }
+
+      await connection.commit();
+      return applicationId;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 
   static async reject(id, adminComment = null) {

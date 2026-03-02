@@ -4,6 +4,8 @@ const session = require('express-session');
 const cors = require('cors');
 const adminRoutes = require('./routes/admin');
 const agentRoutes = require('./routes/agent');
+const powerRoutes = require('./routes/power');
+const autoRoutes = require('./routes/auto');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -44,6 +46,10 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/agent/power', powerRoutes);
+app.use('/api/agent/auto-tasks', autoRoutes);
+app.use('/api/agent/power', powerRoutes);
+app.use('/api/agent/auto-tasks', autoRoutes);
 
 // 404 handler
 app.use((req, res) => {

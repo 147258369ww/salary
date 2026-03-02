@@ -57,10 +57,23 @@ class Transaction {
       SELECT
         COUNT(*) as total_transactions,
         SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as total_credits,
-        SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_debits
+        SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_debits,
+        SUM(CASE WHEN type = 'power_purchase' THEN amount ELSE 0 END) as total_power_purchases,
+        SUM(CASE WHEN type = 'admin_deduct' THEN amount ELSE 0 END) as total_admin_deductions
       FROM transactions
     `);
     return rows[0];
+  }
+
+  /**
+   * 创建管理员扣款交易
+   */
+  static async createAdminDeduct(agentId, amount, reason) {
+    const [result] = await db.execute(
+      'INSERT INTO transactions (agent_id, type, amount, description) VALUES (?, ?, ?, ?)',
+      [agentId, 'admin_deduct', amount, reason]
+    );
+    return result.insertId;
   }
 }
 

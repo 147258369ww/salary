@@ -25,6 +25,10 @@
               <el-icon><Document /></el-icon>
               <span>申请审核</span>
             </el-menu-item>
+            <el-menu-item index="/agents">
+              <el-icon><User /></el-icon>
+              <span>Agent 管理</span>
+            </el-menu-item>
             <el-menu-item index="/transactions">
               <el-icon><List /></el-icon>
               <span>交易流水</span>
@@ -87,7 +91,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { DataLine, Document, List } from '@element-plus/icons-vue'
+import { DataLine, Document, List, User } from '@element-plus/icons-vue'
 import { getStats, getApplications, logout } from '../api'
 
 const router = useRouter()
