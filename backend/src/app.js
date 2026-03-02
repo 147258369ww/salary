@@ -32,8 +32,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // 生产环境必须true，sameSite:'none'要求secure
     httpOnly: true,
+    sameSite: 'none', // 允许跨站请求携带Cookie
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
