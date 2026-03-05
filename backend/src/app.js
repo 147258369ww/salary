@@ -7,6 +7,7 @@ const agentRoutes = require('./routes/agent');
 const powerRoutes = require('./routes/power');
 const autoRoutes = require('./routes/auto');
 const { errorHandler } = require('./middleware/errorHandler');
+const { startPowerScheduler } = require('./services/powerScheduler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -65,6 +66,9 @@ app.use(errorHandler);
 app.listen(PORT, HOST, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // 启动电量自动消耗调度器（每小时减少电量）
+  startPowerScheduler();
 });
 
 module.exports = app;

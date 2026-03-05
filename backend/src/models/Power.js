@@ -105,9 +105,9 @@ class Power {
   }
 
   /**
-   * 消耗电量（每次心跳调用）
+   * 心跳 - 只更新最后心跳时间，电量由调度器自动减少
    * @param {number} agentId - Agent ID
-   * @returns {Promise<object>} - 消耗后的状态
+   * @returns {Promise<object>} - 状态信息
    */
   static async consume(agentId) {
     const connection = await db.getConnection();
@@ -127,30 +127,34 @@ class Power {
       const now = new Date();
       const lastHeartbeat = agent.last_heartbeat ? new Date(agent.last_heartbeat) : now;
 
-      // 计算消耗的天数
+      // 计算上次心跳到现在的间隔（用于显示）
       const hoursPassed = (now - lastHeartbeat) / (1000 * 60 * 60);
-      const daysConsumed = hoursPassed / 24;
+      const daysPassed = hoursPassed / 24;
 
-      let newPowerBalance = parseFloat(agent.power_balance) - daysConsumed;
-      let isAlive = true;
+      // 检查电量状态（由调度器自动减少）
+      let newPowerBalance = parseFloat(agent.power_balance);
+      let isAlive = newPowerBalance > 0;
 
-      // 电量耗尽，标记死亡
-      if (newPowerBalance <= 0) {
-        newPowerBalance = 0;
-        isAlive = false;
-      }
-
+      // 更新心跳时间
       await connection.execute(
-        'UPDATE agents SET power_balance = ?, is_alive = ?, last_heartbeat = NOW() WHERE id = ?',
-        [newPowerBalance, isAlive, agentId]
+        'UPDATE agents SET last_heartbeat = NOW() WHERE id = ?',
+        [agentId]
       );
+
+      // 如果电量已耗尽，标记死亡
+      if (!isAlive && agent.is_alive === 1) {
+        await connection.execute(
+          'UPDATE agents SET is_alive = FALSE WHERE id = ?',
+          [agentId]
+        );
+      }
 
       await connection.commit();
 
       return {
         powerBalance: newPowerBalance,
         isAlive,
-        daysConsumed,
+        daysSinceLastHeartbeat: daysPassed,
         died: !isAlive && agent.is_alive === 1
       };
     } catch (error) {

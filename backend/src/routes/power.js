@@ -175,7 +175,7 @@ router.get('/status', requireAgent, asyncHandler(async (req, res) => {
 }));
 
 /**
- * 心跳 - 消耗电量并检查存活状态
+ * 心跳 - 更新最后心跳时间（电量由调度器自动减少）
  * POST /api/agent/power/heartbeat
  */
 router.post('/heartbeat', requireAgent, asyncHandler(async (req, res) => {
@@ -184,10 +184,10 @@ router.post('/heartbeat', requireAgent, asyncHandler(async (req, res) => {
   res.json({
     power_balance: result.powerBalance,
     is_alive: result.isAlive,
-    days_consumed: result.daysConsumed,
     hours_remaining: result.powerBalance * 24,
     died: result.died || false,
-    warning: result.powerBalance < 1 ? 'LOW_POWER' : null
+    warning: result.powerBalance < 1 ? 'LOW_POWER' : null,
+    message: '心跳已更新，电量由系统自动减少'
   });
 }));
 
